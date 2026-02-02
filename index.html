@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>عرض المنتجات - ملابس ألاء</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Reem+Kufi:wght@400;600;700&family=El+Messiri:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-coffee: #f9f5f2;
+            --accent-coffee: #6F4E37;
+            --light-coffee: #d7ccc8;
+            --text-dark: #3e2723;
+            --star-filled: #FFD700;
+            --star-empty: #e0e0e0;
+            --header-gradient: linear-gradient(135deg, #8B4513 0%, #6F4E37 50%, #8B4513 100%);
+            --header-shadow: 0 4px 15px rgba(111, 78, 55, 0.2);
+            --discount-color: #dc3545;
+            --new-price-color: #28a745;
+        }
+
+        /* --- تعديلات التمرير الأساسية --- */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            /* إزالة overflow: hidden و position: fixed التي كانت تعطل التمرير */
+            overflow-x: hidden;
+            overflow-y: auto !important;
+            background-color: var(--primary-coffee);
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body { 
+            color: var(--text-dark); 
+            font-family: 'El Messiri', sans-serif; 
+            position: relative;
+        }
+
+        /* الهيدر ثابت */
+        .header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px 20px;
+            background: var(--header-gradient); 
+            position: fixed; 
+            top: 0; 
+            width: 100%; 
+            z-index: 1001; 
+            box-shadow: var(--header-shadow);
+            height: 60px;
+        }
+        
+        .logo { font-family: 'Reem Kufi', cursive; font-size: 24px; color: white; }
+
+        /* الحاوية الرئيسية - تعتمد التمرير الطبيعي */
+        .main-container { 
+            margin-top: 60px; /* مساحة للهيدر */
+            padding-bottom: 80px; /* مساحة للبار السفلي */
+            min-height: 101vh; /* ضمان وجود مساحة للتمرير دائماً */
+            display: block;
+            width: 100%;
+        }
+
+        /* شريط الفئات */
+        .categories { 
+            display: flex; 
+            gap: 10px; 
+            padding: 12px; 
+            overflow-x: auto; 
+            background: white; 
+            position: sticky; 
+            top: 60px; 
+            z-index: 1000; 
+            border-bottom: 1px solid var(--light-coffee);
+            scrollbar-width: none;
+        }
+        
+        .categories::-webkit-scrollbar { display: none; }
+        
+        .category-item { 
+            padding: 8px 14px; 
+            border-radius: 20px; 
+            border: 1px solid var(--light-coffee);
+            white-space: nowrap;
+            font-size: 13px;
+            background: #fff;
+        }
+        
+        .category-item.active { 
+            background: var(--accent-coffee); 
+            color: #fff; 
+        }
+
+        /* شبكة المنتجات */
+        .products-container { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 10px; 
+            padding: 10px; 
+        }
+        
+        .product-card { 
+            background: white; 
+            border-radius: 12px; 
+            padding: 8px; 
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .product-img-wrapper { 
+            position: relative; 
+            aspect-ratio: 3/4; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            background: #f0f0f0; 
+        }
+        
+        .product-img-wrapper img { 
+            width: 100%; height: 100%; object-fit: cover; display: none; 
+        }
+        
+        .product-img-wrapper img.active { display: block; }
+
+        .discount-badge {
+            position: absolute; top: 10px; left: 10px;
+            background: var(--discount-color); color: white;
+            padding: 4px 8px; border-radius: 6px; font-size: 11px; z-index: 10;
+        }
+
+        .nav-arrow { 
+            position: absolute; top: 50%; transform: translateY(-50%); 
+            background: rgba(255,255,255,0.8); border: none; 
+            width: 28px; height: 28px; border-radius: 50%; z-index: 5; 
+        }
+        .prev-arrow { left: 5px; } .next-arrow { right: 5px; }
+
+        .product-details { text-align: center; padding: 8px; }
+        .product-name { font-size: 12px; font-weight: bold; margin-bottom: 5px; }
+        .new-price { color: var(--new-price-color); font-weight: bold; }
+        .old-price { text-decoration: line-through; color: #999; font-size: 11px; margin-left: 5px; }
+
+        /* البار السفلي */
+        .bottom-nav { 
+            position: fixed; bottom: 0; width: 100%; 
+            background: white; display: flex; justify-content: space-around; 
+            padding: 10px 0; border-top: 1px solid #eee; z-index: 1001;
+            height: 60px;
+        }
+        
+        .bottom-nav i { font-size: 20px; color: var(--light-coffee); padding: 10px; }
+        .bottom-nav i.active { color: var(--accent-coffee); }
+
+        /* لودينج */
+        #productsLoading {
+            text-align: center; padding: 50px; width: 100%; grid-column: 1/-1;
+        }
+    </style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="logo">ملابس ألاء</div>
+        <i class="fa-solid fa-bars"></i>
+    </header>
+
+    <div class="main-container">
+        <div class="categories" id="catBar">
+            <div class="category-item active" onclick="filterCat('الكل', this)">الكل</div>
+        </div>
+
+        <main class="products-container" id="grid">
+            <div id="productsLoading">جاري التحميل...</div>
+        </main>
+    </div>
+
+    <nav class="bottom-nav">
+        <i class="fa-solid fa-house active"></i>
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <i class="fa-regular fa-heart"></i>
+        <i class="fa-solid fa-bag-shopping"></i>
+    </nav>
+
+    <script>
+        const products = [
+            { id: 1, name: "فستان صيفي أنيق", price: 3500, oldPrice: 4500, discount: 22, cat: "فساتين", urls: ["https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=400"] },
+            { id: 2, name: "بلوزة قطنية بيضاء", price: 2500, cat: "بلوزات", urls: ["https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=400"] },
+            { id: 3, name: "جينز عصري", price: 4500, oldPrice: 5000, discount: 10, cat: "بناطيل", urls: ["https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=400"] },
+            { id: 4, name: "حذاء رياضي مريح", price: 6500, cat: "أحذية", urls: ["https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=400"] }
+        ];
+
+        const categories = ["الكل", "فساتين", "بلوزات", "بناطيل", "أحذية"];
+
+        function initApp() {
+            renderCategories();
+            renderGrid(products);
+        }
+
+        function renderCategories() {
+            const catBar = document.getElementById('catBar');
+            catBar.innerHTML = categories.map(cat => `
+                <div class="category-item ${cat === 'الكل' ? 'active' : ''}" onclick="filterCat('${cat}', this)">${cat}</div>
+            `).join('');
+        }
+
+        function renderGrid(list) {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = list.map(p => `
+                <div class="product-card">
+                    <div class="product-img-wrapper">
+                        ${p.discount ? `<div class="discount-badge">${p.discount}%</div>` : ''}
+                        <img src="${p.urls[0]}" class="active">
+                    </div>
+                    <div class="product-details">
+                        <div class="product-name">${p.name}</div>
+                        <div class="price-box">
+                            <span class="new-price">${p.price} د.ج</span>
+                            ${p.oldPrice ? `<span class="old-price">${p.oldPrice}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function filterCat(cat, btn) {
+            document.querySelectorAll('.category-item').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            const filtered = cat === 'الكل' ? products : products.filter(p => p.cat === cat);
+            renderGrid(filtered);
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
+
